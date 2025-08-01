@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ecoorder
+      POSTGRES_USER: eco_user
+      POSTGRES_PASSWORD: eco_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - eco_net
+  api:
+    build: .
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    volumes:
+      - .:/code
+    environment:
+      DATABASE_URL: postgresql+asyncpg://eco_user:eco_pass@db:5432/ecoorder
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - eco_net
+volumes:
+  postgres_data:
+networks:
+  eco_net:
+    driver: bridge
